@@ -72,7 +72,7 @@ parser.add_argument('--smoothness_lambda', type=float, default=0.36, help='Weigh
 
 # distributed training args
 parser.add_argument('--seed', type=int, default=1, metavar='S', help='random seed')
-parser.add_argument("--local_rank", type=int, default=0)
+
 
 num_gpus = int(os.environ["WORLD_SIZE"]) if "WORLD_SIZE" in os.environ else 1
 is_distributed = num_gpus > 1
@@ -343,13 +343,13 @@ if __name__ == '__main__':
         args.testpath = args.trainpath
 
     if is_distributed:
-        torch.cuda.set_device(args.local_rank)
+        local_rank = int(os.environ["LOCAL_RANK"])
+        torch.cuda.set_device(local_rank)
         torch.distributed.init_process_group(
             backend=args.ddp_backend, init_method="env://"
         )
-
     set_random_seed(args.seed)
-    device = torch.device(args.local_rank)
+    device = torch.device("cuda", local_rank)
 
     if (not is_distributed) or (dist.get_rank() == 0):
         if args.mode == "train":
@@ -430,20 +430,22 @@ if __name__ == '__main__':
         print('Number of model parameters: {}'.format(sum([p.data.nelement() for p in model.parameters()])))
 
     if is_distributed:
+        local_rank = int(os.environ["LOCAL_RANK"])  # Ensure this is defined earlier
         print("Let's use", torch.cuda.device_count(), "GPUs!")
         model = torch.nn.parallel.DistributedDataParallel(
-            model, device_ids=[args.local_rank], output_device=args.local_rank,
+            model,
+            device_ids=[local_rank],
+            output_device=local_rank,
             find_unused_parameters=False
-            # this should be removed if we update BatchNorm stats
-            # broadcast_buffers=False,
         )
         if 'learned' in args.loss_type:
             model_loss = torch.nn.parallel.DistributedDataParallel(
-                model_loss, device_ids=[args.local_rank], output_device=args.local_rank,
+                model_loss,
+                device_ids=[local_rank],
+                output_device=local_rank,
                 find_unused_parameters=False
-                # this should be removed if we update BatchNorm stats
-                # broadcast_buffers=False,
             )
+
     else:
         if torch.cuda.is_available():
             print("Let's use", torch.cuda.device_count(), "GPUs!")

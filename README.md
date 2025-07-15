@@ -21,15 +21,16 @@ For troubleshooting the PyTorch3D install, see the [install documentation](https
 ```
 conda create -n unsupmvs python=3.9
 conda activate unsupmvs
-conda install pytorch=1.13.0 torchvision pytorch-cuda=11.6 -c pytorch -c nvidia
+# CUDA 12.6
+pip install torch==2.6.0 torchvision==0.21.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu126
 
 # pytorch3d install (https://github.com/facebookresearch/pytorch3d/blob/main/INSTALL.md)
 conda install -c fvcore -c iopath -c conda-forge fvcore iopath
 conda install -c bottler nvidiacub
-conda install pytorch3d -c pytorch3d
+pip install "git+https://github.com/facebookresearch/pytorch3d.git" --no-build-isolation
 
 # remaining dependencies
-pip install -r requirements.txt
+pip install -r requirements.txt --no-deps
 ```
 
 ## Datasets
