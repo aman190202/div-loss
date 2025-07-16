@@ -53,6 +53,13 @@ def depth2meshvals(depth, cam):
         valid2 = mask[b, :-1, 1:] & mask[b, 1:, :-1] & mask[b, 1:, 1:]
         tris_masked = torch.cat((tris1[valid1], tris2[valid2]), dim=0)
 
+        # PyTorch3D crashes if a mesh has *no* valid faces because the split
+        # sizes (num_faces_per_mesh) become 0 which mismatches the padded
+        # tensor batch dimension.  In that rare case we inject a single dummy
+        # triangle (0, 1, 2) which will be culled later by the -1 padding.
+        if tris_masked.numel() == 0:
+            tris_masked = torch.tensor([[0, 1, 2]], dtype=torch.long, device=depth.device)
+
         npack = max_tris - tris_masked.shape[0]
         neg_ones = -torch.ones((npack, 3), dtype=torch.long, device=tris_masked.device)
         tris_packed = torch.cat((tris_masked, neg_ones), dim=0)
