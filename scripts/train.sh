@@ -5,14 +5,14 @@ LOGDIR="outputs/DIV-MVS-2"
 MASTER_ADDR="localhost"
 MASTER_PORT=1234
 NNODES=1
-NGPUS=1
+NGPUS=16
 NODE_RANK=0
 
 # Ensure log directory exists
 mkdir -p $LOGDIR
 
 # Make all 8 GPUs visible
-export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
+export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
 
 # Optional: Enable NCCL debug logging for troubleshooting
 export NCCL_DEBUG=WARN
@@ -31,9 +31,11 @@ torchrun \
   train.py \
     --logdir $LOGDIR \
     --dataset custom_train \
-    --trainpath /home/works/coolant-dataset/dataset \
+    --trainpath coolant \
     --trainlist lists/coolant/train.txt \
-    --testpath $DATASET_DIR \
+    --test_dataset custom_test \
+    --testlist lists/coolant/test.txt \
+    --testpath coolant \
     --ngroups 8,4,2 \
     --batch_size 2 \
     --lr 0.0005 | tee -a $LOGDIR/log.txt
