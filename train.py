@@ -348,6 +348,8 @@ if __name__ == '__main__':
         torch.distributed.init_process_group(
             backend=args.ddp_backend, init_method="env://"
         )
+    else:
+        local_rank = 0
     set_random_seed(args.seed)
     device = torch.device("cuda", local_rank)
 

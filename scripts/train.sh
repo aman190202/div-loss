@@ -1,11 +1,11 @@
 #!/bin/bash
 
-DATASET_DIR="/workspace/dataset/dtu/"   # path to dataset folder
+DATASET_DIR="/home/works/dtu"   # path to dataset folder
 LOGDIR="outputs/DIV-MVS-2"
 MASTER_ADDR="localhost"
 MASTER_PORT=1234
 NNODES=1
-NGPUS=8
+NGPUS=1
 NODE_RANK=0
 
 # Ensure log directory exists
@@ -30,7 +30,9 @@ torchrun \
   --master_port=$MASTER_PORT \
   train.py \
     --logdir $LOGDIR \
-    --trainpath $DATASET_DIR \
+    --dataset custom_train \
+    --trainpath /home/works/coolant-dataset/dataset \
+    --trainlist lists/coolant/train.txt \
     --testpath $DATASET_DIR \
     --ngroups 8,4,2 \
     --batch_size 2 \
